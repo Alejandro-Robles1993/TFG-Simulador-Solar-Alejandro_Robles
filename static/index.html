@@ -97,7 +97,7 @@
                                     <div class="col-6 mb-3"><label>Consumo Anual (kWh)</label><input type="number" id="consumo" class="form-control" required></div>
                                     <div class="col-6 mb-3"><label>Precio Luz (€/kWh)</label><input type="number" step="0.001" id="precio" class="form-control" required></div>
                                 </div>
-                                <button type="submit" class="btn btn-solar w-100 mt-2">CALCULAR Y GUARDAR</button>
+                                <button type="submit" id="btnGuardar" class="btn btn-solar w-100 mt-2">CALCULAR Y GUARDAR</button>
                             </form>
                         </div>
                     </div>
@@ -135,7 +135,7 @@
     </div>
 </div>
 
-<!-- Modales (sin cambios) -->
+<!-- Modales -->
 <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
@@ -202,15 +202,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // === CONFIGURACIÓN PARA DESPLIEGUE ===
-    const API = window.location.origin;   // Funciona tanto en local como en Digital Ocean
+    const API = window.location.origin;
 
     let userSession = null;
     let clienteActualCargado = null;
     const modalFichaObj = new bootstrap.Modal(document.getElementById('modalFicha'));
     const modalEditObj = new bootstrap.Modal(document.getElementById('modalEditarPresu'));
 
-    // Mostrar estado de conexión
     document.getElementById('conn-status').innerHTML = `🌐 Conectado a: <strong>${API}</strong>`;
 
     async function ejecutarLogin() {
@@ -237,12 +235,20 @@
         }
     }
 
-    // Resto de tu código JavaScript sin cambios (solo copié y pegué)
+    // ==================== FORMULARIO MEJORADO ====================
     document.getElementById('solarForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const boton = document.getElementById('btnGuardar');
+        const textoOriginal = boton.textContent;
+
         try {
+            boton.disabled = true;
+            boton.textContent = "Guardando...";
+
+            // 1. Crear/obtener cliente
             const resC = await fetch(`${API}/clientes`, {
-                method: 'POST', 
+                method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     nombre: document.getElementById('nombre').value,
@@ -253,10 +259,14 @@
                     id_usuario: userSession.id_usuario
                 })
             });
+
+            if (!resC.ok) throw new Error("Error al guardar el cliente");
+
             const cliente = await resC.json();
 
+            // 2. Simular y guardar presupuesto
             const resS = await fetch(`${API}/simular-presupuesto`, {
-                method: 'POST', 
+                method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     consumo_anual_kwh: parseFloat(document.getElementById('consumo').value),
@@ -265,20 +275,35 @@
                     id_usuario: userSession.id_usuario
                 })
             });
+
+            if (!resS.ok) {
+                const errorData = await resS.json().catch(() => ({}));
+                throw new Error(errorData.detail || "Error al guardar el presupuesto");
+            }
+
             const p = await resS.json();
             
+            // Mostrar resultados
             document.getElementById('v_kw').innerText = p.kw_instalados + " kWp";
             document.getElementById('v_coste').innerText = p.coste_estimado.toLocaleString() + " €";
-            document.getElementById('v_ahorro').innerText = (p.ahorro_estimado * 25).toLocaleString() + " €";
+            document.getElementById('v_ahorro').innerText = p.ahorro_estimado.toLocaleString() + " €";
             document.getElementById('v_tiempo').innerText = p.tiempo_amortizacion + " años";
             
             document.getElementById('resPlaceholder').classList.add('d-none');
             document.getElementById('resContent').classList.remove('d-none');
-        } catch (e) { 
-            alert("Error en simulación"); 
+
+            alert("✅ ¡Presupuesto guardado correctamente!");
+
+        } catch (e) {
+            console.error("Error:", e);
+            alert("❌ " + e.message);
+        } finally {
+            boton.disabled = false;
+            boton.textContent = textoOriginal;
         }
     });
 
+    // ==================== Resto de funciones (sin cambios) ====================
     async function cargarClientes() {
         const res = await fetch(`${API}/clientes-detallados`);
         const clientes = await res.json();
