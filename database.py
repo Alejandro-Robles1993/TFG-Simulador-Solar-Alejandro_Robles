@@ -2,11 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-URL_DATABASE = "mysql+mysqlconnector://root:12345@localhost:3307/simuladorsolar"
+URL_DATABASE = "sqlite:///./sql_app.db"
 
 engine = create_engine(
     URL_DATABASE, 
-    pool_pre_ping=True 
+    connect_args={"check_same_thread": False}  # Necesario solo para SQLite
 )
 
 SessionLocal = sessionmaker(
