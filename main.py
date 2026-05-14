@@ -1,0 +1,161 @@
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from datetime import date
+import bcrypt
+
+# Importaciones locales
+import models
+import schemas
+import logic
+from database import SessionLocal, engine
+
+# Creación de las tablas en la base de datos
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="API Simulador Solar TFG")
+
+# Configuración de CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+
+# Dependencia para obtener la sesión de la base de datos
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# --- AUTENTICACIÓN Y USUARIOS ---
+
+@app.post("/usuarios", response_model=schemas.UsuarioOut)
+def crear_usuario(usuario_data: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+    salt = bcrypt.gensalt()
+    password_encriptada = bcrypt.hashpw(usuario_data.password.encode('utf-8'), salt).decode('utf-8')
+    
+    nuevo_usuario = models.Usuario(
+        nombre=usuario_data.nombre, 
+        email=usuario_data.email, 
+        contraseña=password_encriptada, 
+        rol=usuario_data.rol
+    )
+    
+    db.add(nuevo_usuario)
+    db.commit()
+    db.refresh(nuevo_usuario)
+    return nuevo_usuario
+
+@app.post("/login")
+def login(datos: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+    usuario = db.query(models.Usuario).filter(models.Usuario.email == datos.email).first()
+    
+    if not usuario or not bcrypt.checkpw(datos.password.encode('utf-8'), usuario.contraseña.encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+        
+    return {
+        "usuario": {
+            "id_usuario": usuario.id_usuario, 
+            "nombre": usuario.nombre, 
+            "rol": usuario.rol
+        }
+    }
+
+# --- GESTIÓN DE CLIENTES ---
+
+@app.get("/clientes-detallados")
+def listar_clientes(db: Session = Depends(get_db)):
+    resultados = db.query(models.Cliente, models.Usuario.nombre).join(
+        models.Usuario, models.Cliente.id_usuario == models.Usuario.id_usuario
+    ).all()
+    
+    return [{**c.__dict__, "asignado_a": n} for c, n in resultados]
+
+@app.post("/clientes")
+def crear_o_obtener_cliente(c: schemas.ClienteCreate, db: Session = Depends(get_db)):
+    existente = db.query(models.Cliente).filter(models.Cliente.dni_cif == c.dni_cif).first()
+    if existente: 
+        return existente
+        
+    nuevo = models.Cliente(**c.dict())
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    return nuevo
+
+@app.delete("/clientes/{id}")
+def borrar_cliente(id: int, db: Session = Depends(get_db)):
+    # Eliminación en cascada manual de presupuestos asociados
+    db.query(models.Presupuesto).filter(models.Presupuesto.id_cliente == id).delete()
+    db.query(models.Cliente).filter(models.Cliente.id_cliente == id).delete()
+    db.commit()
+    return {"ok": True}
+
+# --- SIMULACIÓN Y PRESUPUESTOS ---
+
+@app.post("/simular-presupuesto")
+def simular(datos: schemas.SimulacionInput, db: Session = Depends(get_db)):
+    config = db.query(models.Configuracion).first()
+    p_inst = config.precio_instalacion if config else 1500.0
+    h_sol = config.horas_sol_media if config else 4.5
+    
+    res = logic.calcular_presupuesto_solar(datos.consumo_anual_kwh, datos.precio_kwh, h_sol, p_inst)
+    
+    nuevo_consumo = models.Consumo(consumo_anual_kwh=datos.consumo_anual_kwh, precio_kwh=datos.precio_kwh)
+    db.add(nuevo_consumo)
+    db.commit()
+    db.refresh(nuevo_consumo)
+
+    nuevo_p = models.Presupuesto(
+        fecha=date.today(), 
+        kw_instalados=res["kw_instalados"], 
+        coste_estimado=res["coste_estimado"],
+        ahorro_estimado=res["ahorro_estimado"], 
+        tiempo_amortizacion=res["tiempo_amortizacion"],
+        id_usuario=datos.id_usuario, 
+        id_cliente=datos.id_cliente, 
+        id_consumo=nuevo_consumo.id_consumo,
+        id_configuracion=config.id_configuracion if config else None
+    )
+    db.add(nuevo_p)
+    db.commit()
+    return res
+
+@app.get("/presupuestos/cliente/{id}")
+def historial_por_cliente(id: int, db: Session = Depends(get_db)):
+    return db.query(models.Presupuesto).filter(models.Presupuesto.id_cliente == id).all()
+
+@app.delete("/presupuestos/{id}")
+def borrar_presupuesto(id: int, db: Session = Depends(get_db)):
+    db.query(models.Presupuesto).filter(models.Presupuesto.id_presupuesto == id).delete()
+    db.commit()
+    return {"ok": True}
+
+# --- ACTUALIZACIÓN DE DATOS ---
+
+class PresupuestoUpdate(schemas.BaseModel):
+    kw_instalados: float
+    coste_estimado: float
+    ahorro_estimado: float
+    tiempo_amortizacion: int
+
+@app.put("/presupuestos/{id_presupuesto}")
+def actualizar_presupuesto(id_presupuesto: int, datos: PresupuestoUpdate, db: Session = Depends(get_db)):
+    presu = db.query(models.Presupuesto).filter(models.Presupuesto.id_presupuesto == id_presupuesto).first()
+    
+    if not presu:
+        raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+    
+    presu.kw_instalados = datos.kw_instalados
+    presu.coste_estimado = datos.coste_estimado
+    presu.ahorro_estimado = datos.ahorro_estimado
+    presu.tiempo_amortizacion = datos.tiempo_amortizacion
+    
+    db.commit()
+    db.refresh(presu)
+    return {"mensaje": "Presupuesto actualizado correctamente", "id": id_presupuesto}
