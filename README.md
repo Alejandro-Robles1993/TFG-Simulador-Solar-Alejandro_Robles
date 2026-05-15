@@ -29,7 +29,7 @@ Si deseas replicar o ejecutar el proyecto de manera local para desarrollo:
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone [https://github.com/tu-usuario/nombre-del-repo.git](https://github.com/tu-usuario/nombre-del-repo.git)
+   git clone [https://github.com/Alejandro-Robles1993/TFG-Simulador-Solar-Alejandro_Robles.git](https://github.com/Alejandro-Robles1993/TFG-Simulador-Solar-Alejandro_Robles.git)
    cd nombre-del-repo
    2.  **Preparar el entorno virtual:**
 
