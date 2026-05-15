@@ -126,8 +126,8 @@ def borrar_cliente(id: int, db: Session = Depends(get_db)):
 @app.post("/simular-presupuesto")
 def simular(datos: schemas.SimulacionInput, db: Session = Depends(get_db)):
     config = db.query(models.Configuracion).first()
-    p_inst = config.precio_instalacion if config else 1500.0
-    h_sol = config.horas_sol_media if config else 4.5
+    p_inst = config.precio_instalacion if config else 1000.0   # ← Cambiado a 1000
+    h_sol = config.horas_sol_media if config else 5.0
     
     res = logic.calcular_presupuesto_solar(datos.consumo_anual_kwh, datos.precio_kwh, h_sol, p_inst)
     
@@ -169,7 +169,7 @@ class PresupuestoUpdate(schemas.BaseModel):
     kw_instalados: float
     coste_estimado: float
     ahorro_estimado: float
-    tiempo_amortizacion: int
+    tiempo_amortizacion: float
 
 
 @app.put("/presupuestos/{id_presupuesto}")

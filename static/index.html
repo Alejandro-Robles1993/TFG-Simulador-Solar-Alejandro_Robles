@@ -21,7 +21,6 @@
         .nav-pills .nav-link.active { background-color: #0056b3; border-radius: 30px; }
         .nav-link { color: #555; font-weight: 600; cursor: pointer; }
 
-        /* Estilo mejorado para tarjetas de resultados */
         .res-card {
             border-radius: 16px; padding: 25px; text-align: center;
             transition: all 0.3s ease; border: none; height: 100%;
@@ -49,7 +48,7 @@
         <h3 class="fw-bold mb-4 text-primary">Acceso Comercial</h3>
         <input type="email" id="loginEmail" class="form-control mb-3" placeholder="Email corporativo">
         <input type="password" id="loginPass" class="form-control mb-4" placeholder="Contraseña">
-        <button class="btn btn-solar w-100" onclick="ejecutarLogin()">ENTRAR AL PANEL</button>
+        <button class="btn btn-solar w-100" onclick="ejecutarLogin()">ENTRAR</button>
     </div>
 </div>
 
@@ -103,28 +102,28 @@
                                 <div class="col-sm-6">
                                     <div class="res-card card-potencia shadow">
                                         <i class="fas fa-bolt res-icon text-warning"></i>
-                                        <span class="res-label">Potencia Instalada</span>
+                                        <span class="res-label">Kw Instalados</span>
                                         <div class="res-value" id="v_kw">--</div>
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="res-card card-coste shadow">
                                         <i class="fas fa-euro-sign res-icon"></i>
-                                        <span class="res-label">Inversión Inicial</span>
+                                        <span class="res-label">Coste Estimado</span>
                                         <div class="res-value" id="v_coste">--</div>
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="res-card card-ahorro shadow">
                                         <i class="fas fa-leaf res-icon"></i>
-                                        <span class="res-label">Ahorro Vida Útil</span>
+                                        <span class="res-label">Ahorro Estimado</span>
                                         <div class="res-value" id="v_ahorro">--</div>
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="res-card card-tiempo shadow">
                                         <i class="fas fa-stopwatch res-icon"></i>
-                                        <span class="res-label">Retorno Inversión</span>
+                                        <span class="res-label">Tiempo Amortización</span>
                                         <div class="res-value" id="v_tiempo">--</div>
                                     </div>
                                 </div>
@@ -153,6 +152,7 @@
     </div>
 </div>
 
+<!-- === MODAL EXPEDIENTE DEL CLIENTE === -->
 <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
@@ -172,7 +172,14 @@
                 <div class="table-responsive">
                     <table class="table table-sm table-hover" style="font-size: 0.9rem;">
                         <thead class="table-light">
-                            <tr><th>Fecha</th><th>Potencia</th><th>Coste</th><th>Ahorro Anual</th><th>Amortización</th><th>Acciones</th></tr>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Potencia</th>
+                                <th>Coste</th>
+                                <th>Ahorro Anual</th>
+                                <th>Amortización</th>
+                                <th>Dirección de Obra</th>
+                            </tr>
                         </thead>
                         <tbody id="listaPresuFicha"></tbody>
                     </table>
@@ -233,7 +240,6 @@
     const modalFichaObj = new bootstrap.Modal(document.getElementById('modalFicha'));
     const modalEditObj = new bootstrap.Modal(document.getElementById('modalEditarPresu'));
 
-    // --- LOGICA DE LOGIN ---
     async function ejecutarLogin() {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPass').value;
@@ -253,7 +259,6 @@
         } catch (e) { alert("Error de red"); }
     }
 
-    // --- SIMULACIÓN Y GUARDADO ---
     document.getElementById('solarForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
@@ -280,10 +285,9 @@
             });
             const p = await resS.json();
             
-            // Actualización visual de resultados (Nueva vista)
             document.getElementById('v_kw').innerText = p.kw_instalados + " kWp";
             document.getElementById('v_coste').innerText = p.coste_estimado.toLocaleString() + " €";
-            document.getElementById('v_ahorro').innerText = (p.ahorro_estimado * 25).toLocaleString() + " €";
+            document.getElementById('v_ahorro').innerText = p.ahorro_estimado.toLocaleString() + " €";
             document.getElementById('v_tiempo').innerText = p.tiempo_amortizacion + " años";
             
             document.getElementById('resPlaceholder').classList.add('d-none');
@@ -291,7 +295,6 @@
         } catch (e) { alert("Error en simulación"); }
     });
 
-    // --- CARTERA DE CLIENTES ---
     async function cargarClientes() {
         const res = await fetch(`${API}/clientes-detallados`);
         const clientes = await res.json();
@@ -317,7 +320,6 @@
         if(res.ok) document.getElementById(`row-cliente-${id}`).remove();
     }
 
-    // --- FICHA Y GESTION DE PRESUPUESTOS ---
     async function abrirFicha(cliente) {
         clienteActualCargado = cliente;
         document.getElementById('f-nombre').innerText = cliente.nombre;
@@ -337,6 +339,7 @@
                     <td>${p.coste_estimado} €</td>
                     <td class="text-success fw-bold">${p.ahorro_estimado} €</td>
                     <td>${p.tiempo_amortizacion}a</td>
+                    <td class="text-muted small">${cliente.direccion || "—"}</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-warning me-2" onclick='abrirEditorPresu(${JSON.stringify(p)})'><i class="fas fa-edit"></i> Modificar</button>
                         <button class="btn btn-sm text-danger" onclick="borrarPresupuesto(${p.id_presupuesto})"><i class="fas fa-trash-alt"></i></button>
@@ -346,7 +349,6 @@
         modalFichaObj.show();
     }
 
-    // --- EDITOR REACTIVO ---
     function abrirEditorPresu(p) {
         document.getElementById('edit-id-presu').value = p.id_presupuesto;
         document.getElementById('edit-id-cliente').value = p.id_cliente;
@@ -355,7 +357,6 @@
         document.getElementById('edit-ahorro').value = p.ahorro_estimado;
         document.getElementById('edit-tiempo').value = p.tiempo_amortizacion;
         
-        // Escuchadores para la reactividad
         document.getElementById('edit-kw').oninput = recalcularDesdeModal;
         document.getElementById('edit-ahorro').oninput = recalcularDesdeModal;
         document.getElementById('edit-coste').oninput = recalcularDesdeModal;
@@ -364,24 +365,28 @@
     }
 
     function recalcularDesdeModal() {
-        const kw = parseFloat(document.getElementById('edit-kw').value) || 0;
-        const PRECIO_POR_KW = 1450; // Ratio medio de mercado
-        const AHORRO_POR_KW = 215;  // Ratio medio de ahorro
-        
-        // Si cambia la potencia, actualizamos todo
-        if (document.activeElement.id === 'edit-kw') {
-            document.getElementById('edit-coste').value = (kw * PRECIO_POR_KW).toFixed(0);
-            document.getElementById('edit-ahorro').value = (kw * AHORRO_POR_KW).toFixed(0);
-        }
-
-        // Siempre recalculamos el tiempo de amortización
-        const coste = parseFloat(document.getElementById('edit-coste').value) || 0;
-        const ahorro = parseFloat(document.getElementById('edit-ahorro').value) || 0;
-        
-        if (ahorro > 0) {
-            document.getElementById('edit-tiempo').value = Math.ceil(coste / ahorro);
-        }
+    const kw = parseFloat(document.getElementById('edit-kw').value) || 0;
+    const HORAS_SOL = 5.0;
+    const RENDIMIENTO = 0.85;
+    const DIAS_ANO = 365;
+    const PRECIO_INSTALACION = 1000; 
+    const coste = kw * PRECIO_INSTALACION;
+    
+    if (document.activeElement.id === 'edit-kw') {
+        document.getElementById('edit-coste').value = coste.toFixed(2);
+       
+        const produccionEstimada = kw * HORAS_SOL * DIAS_ANO * RENDIMIENTO;
+        const precioKwhPromedio = 0.18; 
+        document.getElementById('edit-ahorro').value = (produccionEstimada * precioKwhPromedio).toFixed(2);
     }
+
+    const ahorro = parseFloat(document.getElementById('edit-ahorro').value) || 0;
+    
+    if (ahorro > 0) {
+        const tiempo = coste / ahorro;
+        document.getElementById('edit-tiempo').value = Math.max(1, tiempo).toFixed(1);
+    }
+}
 
     async function guardarCambiosPresupuesto() {
         const idPresu = document.getElementById('edit-id-presu').value;
@@ -391,19 +396,17 @@
             ahorro_estimado: parseFloat(document.getElementById('edit-ahorro').value),
             tiempo_amortizacion: parseInt(document.getElementById('edit-tiempo').value)
         };
-
         try {
             const res = await fetch(`${API}/presupuestos/${idPresu}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
-
             if(res.ok) {
                 modalEditObj.hide();
                 if(clienteActualCargado) abrirFicha(clienteActualCargado);
-                alert("✓ Presupuesto actualizado y recalculado.");
-            } else { alert("Error al guardar en el servidor."); }
+                alert("✓ Presupuesto actualizado.");
+            }
         } catch (e) { alert("Error de conexión."); }
     }
 
