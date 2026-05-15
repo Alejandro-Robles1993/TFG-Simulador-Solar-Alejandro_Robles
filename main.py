@@ -20,18 +20,16 @@ models.Base.metadata.create_all(bind=engine)
 def cargar_empleados_iniciales():
     db = SessionLocal()
     try:
-        # Buscamos si el empleado ya está registrado para no duplicarlo cada vez que se reinicie el servidor
         empleado = db.query(models.Usuario).filter(models.Usuario.email == "empleado1@tfg.com").first()
         if not empleado:
-            # Encriptamos la contraseña "empleado123" usando la misma lógica de tu endpoint
             salt = bcrypt.gensalt()
             password_encriptada = bcrypt.hashpw("empleado123".encode('utf-8'), salt).decode('utf-8')
             
             nuevo_emp = models.Usuario(
                 nombre="Carlos Gómez",
                 email="empleado1@tfg.com",
-                contraseña=password_encriptada, # Manteniendo tu atributo 'contraseña' con Ñ
-                rol="empleado"                # Rol exacto según tu memoria
+                password=password_encriptada, # Cambiado a 'password' sin Ñ
+                rol="empleado"                
             )
             db.add(nuevo_emp)
             db.commit()
@@ -42,7 +40,7 @@ def cargar_empleados_iniciales():
     finally:
         db.close()
 
-# Ejecutamos la carga del usuario justo aquí, antes de arrancar la API
+
 cargar_empleados_iniciales()
 
 
@@ -95,7 +93,7 @@ def crear_usuario(usuario_data: schemas.UsuarioCreate, db: Session = Depends(get
     nuevo_usuario = models.Usuario(
         nombre=usuario_data.nombre, 
         email=usuario_data.email, 
-        contraseña=password_encriptada, 
+        password=password_encriptada, # Cambiado a 'password'
         rol=usuario_data.rol
     )
     
@@ -109,7 +107,8 @@ def crear_usuario(usuario_data: schemas.UsuarioCreate, db: Session = Depends(get
 def login(datos: schemas.UsuarioCreate, db: Session = Depends(get_db)):
     usuario = db.query(models.Usuario).filter(models.Usuario.email == datos.email).first()
     
-    if not usuario or not bcrypt.checkpw(datos.password.encode('utf-8'), usuario.contraseña.encode('utf-8')):
+    # Cambiado 'usuario.contraseña' por 'usuario.password'
+    if not usuario or not bcrypt.checkpw(datos.password.encode('utf-8'), usuario.password.encode('utf-8')):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
         
     return {
@@ -156,7 +155,7 @@ def borrar_cliente(id: int, db: Session = Depends(get_db)):
 @app.post("/simular-presupuesto")
 def simular(datos: schemas.SimulacionInput, db: Session = Depends(get_db)):
     config = db.query(models.Configuracion).first()
-    p_inst = config.precio_instalacion if config else 1000.0   # ← Cambiado a 1000
+    p_inst = config.precio_instalacion if config else 1000.0
     h_sol = config.horas_sol_media if config else 5.0
     
     res = logic.calcular_presupuesto_solar(datos.consumo_anual_kwh, datos.precio_kwh, h_sol, p_inst)
@@ -216,4 +215,4 @@ def actualizar_presupuesto(id_presupuesto: int, datos: PresupuestoUpdate, db: Se
     
     db.commit()
     db.refresh(presu)
-    return {"mensaje": "Presupuesto actualizado correctamente", "id": id_presupuesto}
+    return {"mensaje": "Presupuesto updated correctamente", "id": id_presupuesto}
