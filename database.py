@@ -5,12 +5,16 @@ import os
 
 # ==================== CONFIGURACIÓN DE BASE DE DATOS ====================
 
-URL_DATABASE = "sqlite:///./simulador.db"
+
+p1 = "AVNS_etYagcTCktK"
+p2 = "Myb4HVaZ"
+
+URL_DATABASE = f"mysql+pymysql://doadmin:{p1}{p2}@db-mysql-ams3-48533-do-user-37311075-0.i.db.ondigitalocean.com:25060/defaultdb?ssl-mode=REQUIRED"
 
 engine = create_engine(
     URL_DATABASE,
-    connect_args={"check_same_thread": False}, 
-    echo=False 
+    pool_pre_ping=True,
+    pool_recycle=3600
 )
 
 SessionLocal = sessionmaker(

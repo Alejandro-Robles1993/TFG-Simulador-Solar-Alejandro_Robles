@@ -16,6 +16,36 @@ from database import SessionLocal, engine
 # Creación de las tablas
 models.Base.metadata.create_all(bind=engine)
 
+# ====================== FUNCIÓN PARA CARGAR EMPLEADO INICIAL ======================
+def cargar_empleados_iniciales():
+    db = SessionLocal()
+    try:
+        # Buscamos si el empleado ya está registrado para no duplicarlo cada vez que se reinicie el servidor
+        empleado = db.query(models.Usuario).filter(models.Usuario.email == "empleado1@tfg.com").first()
+        if not empleado:
+            # Encriptamos la contraseña "empleado123" usando la misma lógica de tu endpoint
+            salt = bcrypt.gensalt()
+            password_encriptada = bcrypt.hashpw("empleado123".encode('utf-8'), salt).decode('utf-8')
+            
+            nuevo_emp = models.Usuario(
+                nombre="Carlos Gómez",
+                email="empleado1@tfg.com",
+                contraseña=password_encriptada, # Manteniendo tu atributo 'contraseña' con Ñ
+                rol="empleado"                # Rol exacto según tu memoria
+            )
+            db.add(nuevo_emp)
+            db.commit()
+            print("¡Usuario Empleado creado y encriptado con éxito en DigitalOcean!")
+    except Exception as e:
+        db.rollback()
+        print(f"Error al cargar empleados iniciales: {e}")
+    finally:
+        db.close()
+
+# Ejecutamos la carga del usuario justo aquí, antes de arrancar la API
+cargar_empleados_iniciales()
+
+
 # ====================== FASTAPI APP ======================
 app = FastAPI(title="API Simulador Solar TFG")
 
