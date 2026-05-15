@@ -71,10 +71,12 @@ Si deseas replicar o ejecutar el proyecto de manera local para desarrollo:
 
 5.  **Acceder a la aplicación:**
 
-    Abre tu navegador web e introduce la dirección local: http://127.0.0.1:8000/
-    Para testear de forma aislada los endpoints, puedes acceder a la documentación interactiva en http://127.0.0.1:8000/docs
+    Abre tu navegador web e introduce la dirección local: https://tfg-simulador-solar-4hiul.ondigitalocean.app/
+    Para testear de forma aislada los endpoints, puedes acceder a la documentación interactiva en https://tfg-simulador-solar-4hiul.ondigitalocean.app/docs
 
-
+    Usuario para las pruebas:
+    empleado@hotmail.com
+    1234
 
 ## Estructura del Proyecto
 
