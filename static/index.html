@@ -150,6 +150,13 @@
                     <div class="col-md-3"><label>Teléfono</label><h6 class="fw-bold" id="f-tel">---</h6></div>
                     <div class="col-md-3"><label>Email</label><h6 class="fw-bold" id="f-email">---</h6></div>
                 </div>
+                
+                <!-- Dirección añadida -->
+                <div class="mb-4 bg-light p-3 rounded-3">
+                    <label class="text-primary fw-bold"><i class="fas fa-map-marker-alt me-1"></i> Dirección de la Obra</label>
+                    <h6 class="fw-bold text-dark mt-1" id="f-direccion">---</h6>
+                </div>
+                
                 <hr>
                 <h6 class="fw-bold text-primary mb-3">Historial de Presupuestos</h6>
                 <div class="table-responsive">
@@ -164,6 +171,7 @@
         </div>
     </div>
 </div>
+
 
 <div class="modal fade" id="modalEditarPresu" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -330,16 +338,25 @@
     }
 
     async function abrirFicha(cliente) {
-        clienteActualCargado = cliente;
-        document.getElementById('f-nombre').innerText = cliente.nombre;
-        document.getElementById('f-dni').innerText = cliente.dni_cif;
-        document.getElementById('f-tel').innerText = cliente.telefono || "---";
-        document.getElementById('f-email').innerText = cliente.email || "---";
-        
-        const res = await fetch(`${API}/presupuestos/cliente/${cliente.id_cliente}`);
-        const presus = await res.json();
-        const tbody = document.getElementById('listaPresuFicha');
-        tbody.innerHTML = "";
+    clienteActualCargado = cliente;
+    
+    
+    document.getElementById('f-nombre').innerText = cliente.nombre || "---";
+    document.getElementById('f-dni').innerText = cliente.dni_cif || "---";
+    document.getElementById('f-tel').innerText = cliente.telefono || "---";
+    document.getElementById('f-email').innerText = cliente.email || "---";
+    document.getElementById('f-direccion').innerText = cliente.direccion || "No registrada";
+
+   
+    const res = await fetch(`${API}/presupuestos/cliente/${cliente.id_cliente}`);
+    const presus = await res.json();
+    
+    const tbody = document.getElementById('listaPresuFicha');
+    tbody.innerHTML = "";
+
+    if (presus.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No hay presupuestos guardados para este cliente</td></tr>`;
+    } else {
         presus.forEach(p => {
             tbody.innerHTML += `
                 <tr id="presu-${p.id_presupuesto}">
@@ -347,15 +364,17 @@
                     <td>${p.kw_instalados} kWp</td>
                     <td>${p.coste_estimado} €</td>
                     <td class="text-success fw-bold">${p.ahorro_estimado} €</td>
-                    <td>${p.tiempo_amortizacion}a</td>
+                    <td>${p.tiempo_amortizacion} años</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-warning me-2" onclick='abrirEditorPresu(${JSON.stringify(p)})'><i class="fas fa-edit"></i> Modificar</button>
                         <button class="btn btn-sm text-danger" onclick="borrarPresupuesto(${p.id_presupuesto})"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>`;
         });
-        modalFichaObj.show();
     }
+    
+    modalFichaObj.show();
+}
 
     function abrirEditorPresu(p) {
         document.getElementById('edit-id-presu').value = p.id_presupuesto;
