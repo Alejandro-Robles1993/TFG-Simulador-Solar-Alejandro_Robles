@@ -246,73 +246,72 @@
     }
 
     // ==================== FORMULARIO MEJORADO ====================
-    document.getElementById('solarForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const boton = document.getElementById('btnGuardar');
-        const textoOriginal = boton.textContent;
+document.getElementById('solarForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const boton = e.target.querySelector('button[type="submit"]');
+    const textoOriginal = boton.textContent;
 
-        try {
-            boton.disabled = true;
-            boton.textContent = "Guardando...";
+    try {
+        boton.disabled = true;
+        boton.textContent = "Guardando...";
 
-            // 1. Crear/obtener cliente
-            const resC = await fetch(`${API}/clientes`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    nombre: document.getElementById('nombre').value,
-                    dni_cif: document.getElementById('dni').value,
-                    telefono: document.getElementById('telefono').value,
-                    email: document.getElementById('email').value,
-                    direccion: document.getElementById('direccion').value,
-                    id_usuario: userSession.id_usuario
-                })
-            });
+        // 1. Crear/obtener cliente
+        const resC = await fetch(`${API}/clientes`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                nombre: document.getElementById('nombre').value,
+                dni_cif: document.getElementById('dni').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                direccion: document.getElementById('direccion').value,
+                id_usuario: userSession.id_usuario
+            })
+        });
 
-            if (!resC.ok) throw new Error("Error al guardar el cliente");
+        if (!resC.ok) throw new Error("Error al guardar el cliente");
 
-            const cliente = await resC.json();
+        const cliente = await resC.json();
 
-            // 2. Simular y guardar presupuesto
-            const resS = await fetch(`${API}/simular-presupuesto`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    consumo_anual_kwh: parseFloat(document.getElementById('consumo').value),
-                    precio_kwh: parseFloat(document.getElementById('precio').value),
-                    id_cliente: cliente.id_cliente,
-                    id_usuario: userSession.id_usuario
-                })
-            });
+        // 2. Simular y guardar presupuesto
+        const resS = await fetch(`${API}/simular-presupuesto`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                consumo_anual_kwh: parseFloat(document.getElementById('consumo').value),
+                precio_kwh: parseFloat(document.getElementById('precio').value),
+                id_cliente: cliente.id_cliente,
+                id_usuario: userSession.id_usuario
+            })
+        });
 
-            if (!resS.ok) {
-                const errorData = await resS.json().catch(() => ({}));
-                throw new Error(errorData.detail || "Error al guardar el presupuesto");
-            }
-
-            const p = await resS.json();
-            
-           
-            document.getElementById('v_kw').innerText = p.kw_instalados + " kWp";
-            document.getElementById('v_coste').innerText = p.coste_estimado.toLocaleString() + " €";
-            document.getElementById('v_ahorro').innerText = p.ahorro_estimado.toLocaleString() + " €";
-            document.getElementById('v_tiempo').innerText = p.tiempo_amortizacion + " años";
-            
-            document.getElementById('resPlaceholder').classList.add('d-none');
-            document.getElementById('resContent').classList.remove('d-none');
-
-            alert("✅ ¡Presupuesto guardado correctamente!");
-
-        } catch (e) {
-            console.error("Error:", e);
-            alert("❌ " + e.message);
-        } finally {
-            boton.disabled = false;
-            boton.textContent = textoOriginal;
+        if (!resS.ok) {
+            const errorData = await resS.json().catch(() => ({}));
+            throw new Error(errorData.detail || "Error al guardar el presupuesto");
         }
-    });
 
+        const p = await resS.json();
+        
+        // Mostrar resultados
+        document.getElementById('v_kw').innerText = p.kw_instalados + " kWp";
+        document.getElementById('v_coste').innerText = p.coste_estimado.toLocaleString() + " €";
+        document.getElementById('v_ahorro').innerText = p.ahorro_estimado.toLocaleString() + " €";
+        document.getElementById('v_tiempo').innerText = p.tiempo_amortizacion + " años";
+        
+        document.getElementById('resPlaceholder').classList.add('d-none');
+        document.getElementById('resContent').classList.remove('d-none');
+
+        alert("✅ ¡Presupuesto guardado correctamente!");
+
+    } catch (e) {
+        console.error("Error:", e);
+        alert("❌ " + e.message);
+    } finally {
+        boton.disabled = false;
+        boton.textContent = textoOriginal;
+    }
+});
     
     async function cargarClientes() {
         const res = await fetch(`${API}/clientes-detallados`);
