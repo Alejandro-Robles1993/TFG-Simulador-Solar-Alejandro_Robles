@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SolarEnergy Pro - CRM</title>
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         body { font-family: 'Montserrat', sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
         #loginSection { 
@@ -23,6 +21,7 @@
         .nav-pills .nav-link.active { background-color: #0056b3; border-radius: 30px; }
         .nav-link { color: #555; font-weight: 600; cursor: pointer; }
 
+        /* Estilo mejorado para tarjetas de resultados */
         .res-card {
             border-radius: 16px; padding: 25px; text-align: center;
             transition: all 0.3s ease; border: none; height: 100%;
@@ -50,8 +49,7 @@
         <h3 class="fw-bold mb-4 text-primary">Acceso Comercial</h3>
         <input type="email" id="loginEmail" class="form-control mb-3" placeholder="Email corporativo">
         <input type="password" id="loginPass" class="form-control mb-4" placeholder="Contraseña">
-        <button class="btn btn-solar w-100" onclick="ejecutarLogin()">ENTRAR</button>
-        <div id="conn-status" class="mt-3 small text-muted"></div>
+        <button class="btn btn-solar w-100" onclick="ejecutarLogin()">ENTRAR AL PANEL</button>
     </div>
 </div>
 
@@ -66,12 +64,8 @@
 
     <div class="container pb-5">
         <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded-pill shadow-sm">
-            <li class="nav-item">
-                <button class="nav-link active" id="tab-sim-btn" data-bs-toggle="pill" data-bs-target="#tab-sim">Simulador</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="tab-list-btn" data-bs-toggle="pill" data-bs-target="#tab-list" onclick="cargarClientes()">Gestión de Cartera</button>
-            </li>
+            <li class="nav-item"><button class="nav-link active" id="tab-sim-btn" data-bs-toggle="pill" data-bs-target="#tab-sim">Simulador</button></li>
+            <li class="nav-item"><button class="nav-link" id="tab-list-btn" data-bs-toggle="pill" data-bs-target="#tab-list" onclick="cargarClientes()">Gestión de Cartera</button></li>
         </ul>
 
         <div class="tab-content">
@@ -97,7 +91,7 @@
                                     <div class="col-6 mb-3"><label>Consumo Anual (kWh)</label><input type="number" id="consumo" class="form-control" required></div>
                                     <div class="col-6 mb-3"><label>Precio Luz (€/kWh)</label><input type="number" step="0.001" id="precio" class="form-control" required></div>
                                 </div>
-                               <button type="submit" class="btn btn-solar w-100 mt-2">CALCULAR Y GUARDAR</button>
+                                <button type="submit" class="btn btn-solar w-100 mt-2">CALCULAR Y GUARDAR</button>
                             </form>
                         </div>
                     </div>
@@ -106,10 +100,34 @@
                         <div id="resContent" class="d-none">
                             <h5 class="fw-bold text-secondary mb-3"><i class="fas fa-chart-line me-2"></i>Propuesta Generada</h5>
                             <div class="row g-3">
-                                <div class="col-sm-6"><div class="res-card card-potencia shadow"><i class="fas fa-bolt res-icon text-warning"></i><span class="res-label">Kw Instalados</span><div class="res-value" id="v_kw">--</div></div></div>
-                                <div class="col-sm-6"><div class="res-card card-coste shadow"><i class="fas fa-euro-sign res-icon"></i><span class="res-label">Coste Estimado</span><div class="res-value" id="v_coste">--</div></div></div>
-                                <div class="col-sm-6"><div class="res-card card-ahorro shadow"><i class="fas fa-leaf res-icon"></i><span class="res-label">Ahorro Estimado</span><div class="res-value" id="v_ahorro">--</div></div></div>
-                                <div class="col-sm-6"><div class="res-card card-tiempo shadow"><i class="fas fa-stopwatch res-icon"></i><span class="res-label">Tiempo Amortización</span><div class="res-value" id="v_tiempo">--</div></div></div>
+                                <div class="col-sm-6">
+                                    <div class="res-card card-potencia shadow">
+                                        <i class="fas fa-bolt res-icon text-warning"></i>
+                                        <span class="res-label">Potencia Instalada</span>
+                                        <div class="res-value" id="v_kw">--</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="res-card card-coste shadow">
+                                        <i class="fas fa-euro-sign res-icon"></i>
+                                        <span class="res-label">Inversión Inicial</span>
+                                        <div class="res-value" id="v_coste">--</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="res-card card-ahorro shadow">
+                                        <i class="fas fa-leaf res-icon"></i>
+                                        <span class="res-label">Ahorro Vida Útil</span>
+                                        <div class="res-value" id="v_ahorro">--</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="res-card card-tiempo shadow">
+                                        <i class="fas fa-stopwatch res-icon"></i>
+                                        <span class="res-label">Retorno Inversión</span>
+                                        <div class="res-value" id="v_tiempo">--</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div id="resPlaceholder" class="main-card p-5 h-100 d-flex flex-column align-items-center justify-content-center text-center opacity-50">
@@ -135,8 +153,6 @@
     </div>
 </div>
 
-<!-- Modales -->
-<!-- === MODAL EXPEDIENTE DEL CLIENTE === -->
 <div class="modal fade" id="modalFicha" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
@@ -156,15 +172,7 @@
                 <div class="table-responsive">
                     <table class="table table-sm table-hover" style="font-size: 0.9rem;">
                         <thead class="table-light">
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Potencia</th>
-                                <th>Coste</th>
-                                <th>Ahorro Anual</th>
-                                <th>Amortización</th>
-                                <th>Dirección</th>   <!-- Nueva columna -->
-                                <th>Acciones</th>
-                            </tr>
+                            <tr><th>Fecha</th><th>Potencia</th><th>Coste</th><th>Ahorro Anual</th><th>Amortización</th><th>Acciones</th></tr>
                         </thead>
                         <tbody id="listaPresuFicha"></tbody>
                     </table>
@@ -172,8 +180,7 @@
             </div>
         </div>
     </div>
-</div
-
+</div>
 
 <div class="modal fade" id="modalEditarPresu" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -185,17 +192,25 @@
             <div class="modal-body p-4">
                 <input type="hidden" id="edit-id-presu">
                 <input type="hidden" id="edit-id-cliente">
+                
                 <div class="alert alert-light border mb-4">
                     <i class="fas fa-sync-alt text-primary me-2"></i> 
                     <small class="text-muted">Los valores se recalcularán automáticamente al cambiar la potencia.</small>
                 </div>
+
                 <div class="mb-3">
                     <label>Potencia Instalada (kWp)</label>
                     <input type="number" step="0.1" id="edit-kw" class="form-control form-control-lg fw-bold text-primary">
                 </div>
                 <div class="row">
-                    <div class="col-6 mb-3"><label>Coste Total (€)</label><input type="number" id="edit-coste" class="form-control"></div>
-                    <div class="col-6 mb-3"><label>Ahorro Anual (€)</label><input type="number" id="edit-ahorro" class="form-control"></div>
+                    <div class="col-6 mb-3">
+                        <label>Coste Total (€)</label>
+                        <input type="number" id="edit-coste" class="form-control">
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label>Ahorro Anual (€)</label>
+                        <input type="number" id="edit-ahorro" class="form-control">
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label>Tiempo Amortización (Años)</label>
@@ -212,19 +227,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const API = window.location.origin;
-
+    const API = "http://127.0.0.1:8000";
     let userSession = null;
     let clienteActualCargado = null;
     const modalFichaObj = new bootstrap.Modal(document.getElementById('modalFicha'));
     const modalEditObj = new bootstrap.Modal(document.getElementById('modalEditarPresu'));
 
-    document.getElementById('conn-status').innerHTML = `🌐 Conectado a: <strong>${API}</strong>`;
-
+    // --- LOGICA DE LOGIN ---
     async function ejecutarLogin() {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPass').value;
-        
         try {
             const res = await fetch(`${API}/login`, {
                 method: 'POST',
@@ -237,82 +249,49 @@
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('dashboardSection').style.display = 'block';
                 document.getElementById('userName').innerText = "Agente: " + userSession.nombre;
-            } else { 
-                alert("Acceso denegado"); 
-            }
-        } catch (e) { 
-            alert("Error de conexión con el servidor"); 
-        }
+            } else { alert("Acceso denegado"); }
+        } catch (e) { alert("Error de red"); }
     }
 
-    // ==================== FORMULARIO MEJORADO ====================
-document.getElementById('solarForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const boton = e.target.querySelector('button[type="submit"]');
-    const textoOriginal = boton.textContent;
+    // --- SIMULACIÓN Y GUARDADO ---
+    document.getElementById('solarForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            const resC = await fetch(`${API}/clientes`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    nombre: document.getElementById('nombre').value,
+                    dni_cif: document.getElementById('dni').value,
+                    telefono: document.getElementById('telefono').value,
+                    email: document.getElementById('email').value,
+                    direccion: document.getElementById('direccion').value,
+                    id_usuario: userSession.id_usuario
+                })
+            });
+            const cliente = await resC.json();
+            const resS = await fetch(`${API}/simular-presupuesto`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    consumo_anual_kwh: parseFloat(document.getElementById('consumo').value),
+                    precio_kwh: parseFloat(document.getElementById('precio').value),
+                    id_cliente: cliente.id_cliente,
+                    id_usuario: userSession.id_usuario
+                })
+            });
+            const p = await resS.json();
+            
+            // Actualización visual de resultados (Nueva vista)
+            document.getElementById('v_kw').innerText = p.kw_instalados + " kWp";
+            document.getElementById('v_coste').innerText = p.coste_estimado.toLocaleString() + " €";
+            document.getElementById('v_ahorro').innerText = (p.ahorro_estimado * 25).toLocaleString() + " €";
+            document.getElementById('v_tiempo').innerText = p.tiempo_amortizacion + " años";
+            
+            document.getElementById('resPlaceholder').classList.add('d-none');
+            document.getElementById('resContent').classList.remove('d-none');
+        } catch (e) { alert("Error en simulación"); }
+    });
 
-    try {
-        boton.disabled = true;
-        boton.textContent = "Guardando...";
-
-        // 1. Crear/obtener cliente
-        const resC = await fetch(`${API}/clientes`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                nombre: document.getElementById('nombre').value,
-                dni_cif: document.getElementById('dni').value,
-                telefono: document.getElementById('telefono').value,
-                email: document.getElementById('email').value,
-                direccion: document.getElementById('direccion').value,
-                id_usuario: userSession.id_usuario
-            })
-        });
-
-        if (!resC.ok) throw new Error("Error al guardar el cliente");
-
-        const cliente = await resC.json();
-
-        // 2. Simular y guardar presupuesto
-        const resS = await fetch(`${API}/simular-presupuesto`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                consumo_anual_kwh: parseFloat(document.getElementById('consumo').value),
-                precio_kwh: parseFloat(document.getElementById('precio').value),
-                id_cliente: cliente.id_cliente,
-                id_usuario: userSession.id_usuario
-            })
-        });
-
-        if (!resS.ok) {
-            const errorData = await resS.json().catch(() => ({}));
-            throw new Error(errorData.detail || "Error al guardar el presupuesto");
-        }
-
-        const p = await resS.json();
-        
-        // Mostrar resultados
-        document.getElementById('v_kw').innerText = p.kw_instalados + " kWp";
-        document.getElementById('v_coste').innerText = p.coste_estimado.toLocaleString() + " €";
-        document.getElementById('v_ahorro').innerText = p.ahorro_estimado.toLocaleString() + " €";
-        document.getElementById('v_tiempo').innerText = p.tiempo_amortizacion + " años";
-        
-        document.getElementById('resPlaceholder').classList.add('d-none');
-        document.getElementById('resContent').classList.remove('d-none');
-
-        alert("✅ ¡Presupuesto guardado correctamente!");
-
-    } catch (e) {
-        console.error("Error:", e);
-        alert("❌ " + e.message);
-    } finally {
-        boton.disabled = false;
-        boton.textContent = textoOriginal;
-    }
-});
-    
+    // --- CARTERA DE CLIENTES ---
     async function cargarClientes() {
         const res = await fetch(`${API}/clientes-detallados`);
         const clientes = await res.json();
@@ -338,25 +317,18 @@ document.getElementById('solarForm').addEventListener('submit', async (e) => {
         if(res.ok) document.getElementById(`row-cliente-${id}`).remove();
     }
 
+    // --- FICHA Y GESTION DE PRESUPUESTOS ---
     async function abrirFicha(cliente) {
-    clienteActualCargado = cliente;
-    
-    
-    document.getElementById('f-nombre').innerText = cliente.nombre || "---";
-    document.getElementById('f-dni').innerText = cliente.dni_cif || "---";
-    document.getElementById('f-tel').innerText = cliente.telefono || "---";
-    document.getElementById('f-email').innerText = cliente.email || "---";
-
-    
-    const res = await fetch(`${API}/presupuestos/cliente/${cliente.id_cliente}`);
-    const presus = await res.json();
-    
-    const tbody = document.getElementById('listaPresuFicha');
-    tbody.innerHTML = "";
-
-    if (presus.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">No hay presupuestos guardados para este cliente</td></tr>`;
-    } else {
+        clienteActualCargado = cliente;
+        document.getElementById('f-nombre').innerText = cliente.nombre;
+        document.getElementById('f-dni').innerText = cliente.dni_cif;
+        document.getElementById('f-tel').innerText = cliente.telefono || "---";
+        document.getElementById('f-email').innerText = cliente.email || "---";
+        
+        const res = await fetch(`${API}/presupuestos/cliente/${cliente.id_cliente}`);
+        const presus = await res.json();
+        const tbody = document.getElementById('listaPresuFicha');
+        tbody.innerHTML = "";
         presus.forEach(p => {
             tbody.innerHTML += `
                 <tr id="presu-${p.id_presupuesto}">
@@ -364,19 +336,17 @@ document.getElementById('solarForm').addEventListener('submit', async (e) => {
                     <td>${p.kw_instalados} kWp</td>
                     <td>${p.coste_estimado} €</td>
                     <td class="text-success fw-bold">${p.ahorro_estimado} €</td>
-                    <td>${p.tiempo_amortizacion} años</td>
-                    <td class="text-muted small">${cliente.direccion || "—"}</td>
+                    <td>${p.tiempo_amortizacion}a</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-warning me-2" onclick='abrirEditorPresu(${JSON.stringify(p)})'><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-warning me-2" onclick='abrirEditorPresu(${JSON.stringify(p)})'><i class="fas fa-edit"></i> Modificar</button>
                         <button class="btn btn-sm text-danger" onclick="borrarPresupuesto(${p.id_presupuesto})"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>`;
         });
+        modalFichaObj.show();
     }
-    
-    modalFichaObj.show();
-}
 
+    // --- EDITOR REACTIVO ---
     function abrirEditorPresu(p) {
         document.getElementById('edit-id-presu').value = p.id_presupuesto;
         document.getElementById('edit-id-cliente').value = p.id_cliente;
@@ -385,25 +355,32 @@ document.getElementById('solarForm').addEventListener('submit', async (e) => {
         document.getElementById('edit-ahorro').value = p.ahorro_estimado;
         document.getElementById('edit-tiempo').value = p.tiempo_amortizacion;
         
+        // Escuchadores para la reactividad
         document.getElementById('edit-kw').oninput = recalcularDesdeModal;
         document.getElementById('edit-ahorro').oninput = recalcularDesdeModal;
         document.getElementById('edit-coste').oninput = recalcularDesdeModal;
+
         modalEditObj.show();
     }
 
     function recalcularDesdeModal() {
         const kw = parseFloat(document.getElementById('edit-kw').value) || 0;
-        const PRECIO_POR_KW = 1450; 
-        const AHORRO_POR_KW = 215; 
+        const PRECIO_POR_KW = 1450; // Ratio medio de mercado
+        const AHORRO_POR_KW = 215;  // Ratio medio de ahorro
         
+        // Si cambia la potencia, actualizamos todo
         if (document.activeElement.id === 'edit-kw') {
             document.getElementById('edit-coste').value = (kw * PRECIO_POR_KW).toFixed(0);
             document.getElementById('edit-ahorro').value = (kw * AHORRO_POR_KW).toFixed(0);
         }
 
+        // Siempre recalculamos el tiempo de amortización
         const coste = parseFloat(document.getElementById('edit-coste').value) || 0;
         const ahorro = parseFloat(document.getElementById('edit-ahorro').value) || 0;
-        if (ahorro > 0) document.getElementById('edit-tiempo').value = Math.ceil(coste / ahorro);
+        
+        if (ahorro > 0) {
+            document.getElementById('edit-tiempo').value = Math.ceil(coste / ahorro);
+        }
     }
 
     async function guardarCambiosPresupuesto() {
@@ -414,17 +391,19 @@ document.getElementById('solarForm').addEventListener('submit', async (e) => {
             ahorro_estimado: parseFloat(document.getElementById('edit-ahorro').value),
             tiempo_amortizacion: parseInt(document.getElementById('edit-tiempo').value)
         };
+
         try {
             const res = await fetch(`${API}/presupuestos/${idPresu}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
+
             if(res.ok) {
                 modalEditObj.hide();
                 if(clienteActualCargado) abrirFicha(clienteActualCargado);
-                alert("✓ Presupuesto actualizado.");
-            }
+                alert("✓ Presupuesto actualizado y recalculado.");
+            } else { alert("Error al guardar en el servidor."); }
         } catch (e) { alert("Error de conexión."); }
     }
 
